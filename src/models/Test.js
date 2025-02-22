@@ -4,6 +4,10 @@ const testSchema = new Schema(
     question: {
       type: String,
     },
+    level: {
+      type: Number,
+      required: true,
+    },
     photoUrl: [
       {
         type: String,
