@@ -1,8 +1,28 @@
 const Theme = require("../models/Theme.js");
+const Student = require("../models/Student.js");
+
+exports.getAllThemesForStudents = async (req, res) => {
+  try {
+    if (!req.student || !req.student.id) {
+      return res.status(400).json({ message: "User not authenticated" });
+    }
+    const student = await Student.findById(req.student.id);
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+    const themes = await Theme.find({
+      group: { $in: [student.group] },
+    }).select("-group");
+    return res.status(200).json({ data: themes });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 
 exports.getAllThemes = async (req, res) => {
   try {
-    const themes = await Theme.find();
+    const themes = await Theme.find().populate("group");
     return res.status(200).json({ data: themes });
   } catch (error) {
     return res.status(500).json({ message: error.message });

@@ -1,6 +1,10 @@
-const { Schema, model } = require("mongoose");
+const { Schema, Types, model } = require("mongoose");
 const studentSchema = new Schema(
   {
+    group: {
+      type: Types.ObjectId,
+      ref: "groups",
+    },
     firstName: {
       type: String,
       required: true,

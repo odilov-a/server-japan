@@ -4,7 +4,8 @@ const { authenticate } = require("../middlewares/auth.middleware.js");
 const { requireRole } = require("../middlewares/role.middleware.js");
 const themeRouter = Router();
 
-themeRouter.get("/", authenticate, requireRole(["admin", "student"]), themeController.getAllThemes);
+themeRouter.get("/", authenticate, requireRole(["admin"]), themeController.getAllThemes);
+themeRouter.get("/student", authenticate, requireRole(["student"]), themeController.getAllThemesForStudents);
 themeRouter.post("/", authenticate, requireRole(["admin"]), themeController.createTheme);
 
 themeRouter.get("/:id", authenticate, requireRole(["admin"]), themeController.getThemeById);

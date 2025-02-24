@@ -6,8 +6,8 @@ const Student = require("../models/Student.js");
 exports.getAllStudents = async (req, res) => {
   try {
     const students = await Student.find().select(
-      "firstName lastName phoneNumber photoUrl username lastLogin email"
-    );
+      "firstName lastName phoneNumber photoUrl username lastLogin email group"
+    ).populate("group");
     return res.json({ data: students });
   } catch (error) {
     return res.status(500).json({ error: error.message });
