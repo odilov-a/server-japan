@@ -16,7 +16,7 @@ exports.getAllStudents = async (req, res) => {
 
 exports.getMeStudent = async (req, res) => {
   try {
-    const student = await Student.findById(req.student.id);
+    const student = await Student.findById(req.student.id).populate("group");
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
@@ -34,6 +34,7 @@ exports.getMeStudent = async (req, res) => {
         photoUrl: student.photoUrl,
         isActive: student.isActive,
         email: student.email,
+        group: student.group,
       },
     });
   } catch (error) {

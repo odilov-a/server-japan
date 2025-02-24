@@ -1,16 +1,30 @@
 const path = require("path");
 const multer = require("multer");
-const mongoose = require("mongoose");
 const Files = require("../models/File.js");
 
 const fileFilter = (req, file, cb) => {
-  const allowedExtensions = [".jpg", ".jpeg", ".png", ".doc", ".docx", ".pdf", ".xls", ".xlsx", ".ppt", ".pptx", ".txt"];
+  const allowedExtensions = [
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".doc",
+    ".docx",
+    ".pdf",
+    ".xls",
+    ".xlsx",
+    ".ppt",
+    ".pptx",
+    ".txt",
+  ];
   const fileExtension = path.extname(file.originalname).toLowerCase();
   if (allowedExtensions.includes(fileExtension)) {
     cb(null, true);
   } else {
     cb(
-      new Error("Invalid file type! Allowed file types are: " + allowedExtensions.join(", ")),
+      new Error(
+        "Invalid file type! Allowed file types are: " +
+          allowedExtensions.join(", ")
+      ),
       false
     );
   }
@@ -22,9 +36,14 @@ exports.upload = async (req, res) => {
     const storage = multer.diskStorage({
       destination: publicFolderPath,
       filename: (req, file, cb) => {
-        const fileId = new mongoose.Types.ObjectId().toString();
+        const timestamp = Date.now();
+        const originalName = path.basename(
+          file.originalname,
+          path.extname(file.originalname)
+        );
         const fileExtension = path.extname(file.originalname);
-        const fileName = `${fileId}${fileExtension}`;
+        // Nom: timestamp-originalName.pdf
+        const fileName = `${originalName}-${timestamp}${fileExtension}`;
         cb(null, fileName);
       },
     });
