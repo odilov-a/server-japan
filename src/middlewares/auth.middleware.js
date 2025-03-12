@@ -16,6 +16,10 @@ exports.authenticate = (req, res, next) => {
         req.student = decoded;
         req.userId = decoded.id;
         break;
+      case "teacher":
+        req.teacher = decoded;
+        req.userId = decoded.id;
+        break;
       default:
         return res.status(403).json({ message: "Forbidden" });
     }

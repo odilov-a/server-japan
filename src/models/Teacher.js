@@ -1,10 +1,6 @@
-const { Schema, Types, model } = require("mongoose");
-const studentSchema = new Schema(
+const { Schema, model } = require("mongoose");
+const teacherSchema = new Schema(
   {
-    group: {
-      type: Types.ObjectId,
-      ref: "Group",
-    },
     firstName: {
       type: String,
       required: true,
@@ -20,6 +16,11 @@ const studentSchema = new Schema(
     username: {
       type: String,
       unique: [true, "Username already exists"],
+      required: true,
+    },
+    phoneNumber: {
+      type: String,
+      unique: true,
     },
     photoUrl: [
       {
@@ -28,11 +29,8 @@ const studentSchema = new Schema(
     ],
     role: {
       type: String,
-      default: "student",
+      default: "teacher",
       required: true,
-    },
-    lastLogin: {
-      type: Date,
     },
     createdAt: {
       type: Date,
@@ -44,5 +42,5 @@ const studentSchema = new Schema(
   }
 );
 
-const Student = model("Student", studentSchema);
-module.exports = Student;
+const Teacher = model("Teacher", teacherSchema);
+module.exports = Teacher;

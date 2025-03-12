@@ -1,30 +1,20 @@
-const { Schema, model } = require("mongoose");
+const { Schema, Types, model } = require("mongoose");
 const testSchema = new Schema(
   {
-    question: {
+    name: {
       type: String,
     },
-    level: {
-      type: Number,
-      required: true,
+    subject: {
+      type: String,
     },
-    photoUrl: [
-      {
-        type: String,
-      },
-    ],
-    options: [
-      {
-        text: {
-          type: String,
-          required: true,
-        },
-        isCorrect: {
-          type: Boolean,
-          required: true,
-        },
-      },
-    ],
+    teacher: {
+      type: Types.ObjectId,
+      ref: "Teacher",
+    },
+    admin: {
+      type: Types.ObjectId,
+      ref: "Admin",
+    },
     createdAt: {
       type: Date,
       default: Date.now,
@@ -35,5 +25,5 @@ const testSchema = new Schema(
   }
 );
 
-const Test = model("tests", testSchema);
+const Test = model("Test", testSchema);
 module.exports = Test;

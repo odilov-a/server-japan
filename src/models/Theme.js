@@ -4,7 +4,7 @@ const themeSchema = new Schema(
     group: [
       {
         type: Types.ObjectId,
-        ref: "groups",
+        ref: "Group",
         required: true,
       },
     ],
@@ -31,5 +31,5 @@ const themeSchema = new Schema(
   }
 );
 
-const Theme = model("themes", themeSchema);
+const Theme = model("Theme", themeSchema);
 module.exports = Theme;

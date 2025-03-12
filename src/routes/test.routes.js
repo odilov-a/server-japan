@@ -1,14 +1,15 @@
 const { Router } = require("express");
-const testController = require("../controllers/test.controller.js");
+const questionController = require("../controllers/test.controller.js");
 const { authenticate } = require("../middlewares/auth.middleware.js");
 const { requireRole } = require("../middlewares/role.middleware.js");
-const testRouter = Router();
+const questionRoutes = Router();
 
-testRouter.get("/", authenticate, requireRole(["admin", "student"]), testController.getAllTests);
-testRouter.post("/", authenticate, requireRole(["admin"]), testController.createTest);
+questionRoutes.get("/", authenticate, requireRole(["admin", "teacher", "student"]), questionController.getAllTest);
+questionRoutes.get("/test/:id", authenticate, requireRole(["admin", "teacher", "student"]), questionController.getTestQuestions);
+questionRoutes.post("/", authenticate, requireRole(["admin", "teacher"]), questionController.createTest);
+questionRoutes.post("/check/:id", authenticate, requireRole(["admin", "teacher", "student"]), questionController.checkAnswers);
+questionRoutes.put("/:id", authenticate, requireRole(["admin", "teacher"]), questionController.updateTest);
+questionRoutes.delete("/:id", authenticate, requireRole(["admin", "teacher"]), questionController.deleteTest);
 
-testRouter.get("/:id", authenticate, requireRole(["admin"]), testController.getTestById);
-testRouter.put("/:id", authenticate, requireRole(["admin"]), testController.updateTest);
-testRouter.delete("/:id", authenticate, requireRole(["admin"]), testController.deleteTest);
 
-module.exports = testRouter;
+module.exports = questionRoutes;

@@ -1,13 +1,14 @@
 const bcrypt = require("bcrypt");
-const nodemailer = require("nodemailer");
 const { sign } = require("../utils/jwt.js");
 const Student = require("../models/Student.js");
 
 exports.getAllStudents = async (req, res) => {
   try {
-    const students = await Student.find().select(
-      "firstName lastName phoneNumber photoUrl username lastLogin email group"
-    ).populate("group");
+    const students = await Student.find()
+      .select(
+        "firstName lastName phoneNumber photoUrl username lastLogin group"
+      )
+      .populate("group");
     return res.json({ data: students });
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -33,7 +34,6 @@ exports.getMeStudent = async (req, res) => {
         phoneNumber: student.phoneNumber,
         photoUrl: student.photoUrl,
         isActive: student.isActive,
-        email: student.email,
         group: student.group,
       },
     });
@@ -70,42 +70,25 @@ exports.searchStudentByFirstNameLastName = async (req, res) => {
 
 exports.registerStudent = async (req, res) => {
   try {
-    const { firstName, lastName, email } = req.body;
-    const existingStudent = await Student.findOne({ email });
-    if (existingStudent) {
-      return res.status(400).json({ message: "Email already exists" });
-    }
-    const username = `${firstName}${lastName}`
-      .toLowerCase()
-      .replace(/\s+/g, "")
-      .concat(Math.floor(Math.random() * 10000));
-    const password = Math.random().toString(36).slice(-12);
+    const { password, ...otherData } = req.body;
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     const student = new Student({
-      firstName,
-      lastName,
-      email,
-      username,
+      ...otherData,
       password: hashedPassword,
     });
     await student.save();
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_PASS,
-      },
+    const token = sign({
+      id: student._id,
+      role: student.role,
+      username: student.username,
+      createdAt: student.createdAt,
     });
-    const mailOptions = {
-      from: "Siz platformaga muvaffaqiyatli ro'yxatdan o'tdingiz! <akbarjonodilov03@gmail.com>",
-      to: email,
-      subject: "Siz platformaga muvaffaqiyatli ro'yxatdan o'tdingiz!",
-      text: `Hurmatli ${firstName},\n\nSiz platformasidan muvaffaqiyatli ro'yxatdan o'tganingiz bilan tabriklaymiz! \n\nShaxsiy login ma'lumotlaringiz:\n- Username: ${username}\n- Parol: ${password}\n\nIltimos, ushbu ma'lumotlarni xavfsiz joyda saqlang va begonalarga oshkor qilmang va xavfsizlik uchun profilingiz ma'lumotlarini o'zgartirib oling!\n\nHar qanday savol yoki tushunmovchilik yuzasidan biz bilan bog'lanishdan tortinmang.`,
-    };
-    await transporter.sendMail(mailOptions);
     return res.status(201).json({
-      message: "Student registered successfully",
+      data: {
+        token,
+        student,
+      },
     });
   } catch (error) {
     return res.status(500).json({ error: error.message });
