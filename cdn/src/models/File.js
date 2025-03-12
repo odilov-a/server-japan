@@ -15,5 +15,5 @@ const filesSchema = new Schema(
   }
 );
 
-const Files = model("files", filesSchema);
+const Files = model("File", filesSchema);
 module.exports = Files;
