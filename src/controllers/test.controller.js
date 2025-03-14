@@ -5,7 +5,7 @@ const Question = require("../models/Question.js");
 
 exports.getAllTest = async (req, res) => {
   try {
-    const tests = await Test.find().lean();
+    const tests = await Test.find().sort({ createdAt: -1 }).lean();
     return res.json({ data: tests });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -14,8 +14,7 @@ exports.getAllTest = async (req, res) => {
 
 exports.getTestQuestions = async (req, res) => {
   try {
-    const findTest = await Test.findById(req.params.id)
-      .lean();
+    const findTest = await Test.findById(req.params.id).lean();
     if (!findTest) return res.status(404).json({ message: "Test not found" });
     const questions = await Question.find({ test: req.params.id }).lean();
     const localizedTest = {
@@ -53,6 +52,7 @@ exports.createTest = async (req, res) => {
         req.body.questions.map((q) => ({ ...q, test: test._id }))
       );
     }
+    return res.status(201).json({ data: test });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -128,16 +128,64 @@ exports.checkAnswers = async (req, res) => {
 
 exports.updateTest = async (req, res) => {
   try {
-    const test = await Test.findByIdAndUpdate(req.params.id, req.body, {
+    const testId = req.params.id;
+    const updateBody = { ...req.body };
+    delete updateBody.questions;
+    const test = await Test.findByIdAndUpdate(testId, updateBody, {
       new: true,
     });
-    if (!test) return res.status(404).json({ message: "Test not found" });
-    if (req.body.questions) {
+    if (!test) {
+      return res.status(404).json({ message: "Test not found" });
+    }
+    const existingQuestions = await Question.find({ test: test._id });
+    const existingQuestionIds = existingQuestions.map((q) => q._id.toString());
+    const submittedQuestionIds = (req.body.questions || [])
+      .map((q) => q._id)
+      .filter(Boolean);
+    const updatedQuestions = [];
+    if (req.body.questions && req.body.questions.length > 0) {
       for (const question of req.body.questions) {
-        await Question.findByIdAndUpdate(question._id, question, { new: true });
+        if (question._id) {
+          const updatedQuestion = await Question.findByIdAndUpdate(
+            question._id,
+            {
+              title: question.title,
+              photoUrl: question.photoUrl,
+              answers: question.answers,
+              test: test._id,
+            },
+            { new: true }
+          );
+          if (updatedQuestion) {
+            updatedQuestions.push(updatedQuestion);
+          }
+        } else {
+          const newQuestion = await Question.create({
+            title: question.title,
+            photoUrl: question.photoUrl,
+            answers: question.answers,
+            test: test._id,
+          });
+          updatedQuestions.push(newQuestion);
+        }
       }
     }
-    return res.json({ data: test });
+    const questionsToDelete = existingQuestionIds.filter(
+      (id) => !submittedQuestionIds.includes(id)
+    );
+    if (questionsToDelete.length > 0) {
+      await Question.deleteMany({
+        _id: { $in: questionsToDelete },
+        test: test._id,
+      });
+    }
+    const allQuestions = await Question.find({ test: test._id });
+    return res.json({
+      data: {
+        ...test.toObject(),
+        questions: allQuestions,
+      },
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

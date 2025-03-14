@@ -4,9 +4,6 @@ const testSchema = new Schema(
     name: {
       type: String,
     },
-    subject: {
-      type: String,
-    },
     teacher: {
       type: Types.ObjectId,
       ref: "Teacher",

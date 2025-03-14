@@ -5,17 +5,12 @@ const questionSchema = new Schema(
       type: String,
       required: true,
     },
-    type: {
-      type: Number,
-    },
-    photoUrl: [
-      {
-        type: String,
-      },
-    ],
     createdAt: {
       type: Date,
       default: Date.now,
+    },
+    photoUrl: {
+      type: String,
     },
     answers: [
       {
