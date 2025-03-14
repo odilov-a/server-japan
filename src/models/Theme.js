@@ -24,12 +24,10 @@ const themeSchema = new Schema(
     admin: {
       type: Types.ObjectId,
       ref: "Admin",
-      required: true,
     },
     teacher: {
       type: Types.ObjectId,
       ref: "Teacher",
-      required: true,
     },
     createdAt: {
       type: Date,
