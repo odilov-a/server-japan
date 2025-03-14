@@ -19,10 +19,22 @@ exports.getAllThemesForStudents = async (req, res) => {
   }
 };
 
-
 exports.getAllThemes = async (req, res) => {
   try {
     const themes = await Theme.find().populate("group");
+    return res.status(200).json({ data: themes });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getThemeByTeacher = async (req, res) => {
+  try {
+    const teacherId = req.teacher?.id;
+    if (!teacherId) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+    const themes = await Theme.find({ teacher: teacherId });
     return res.status(200).json({ data: themes });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -43,7 +55,16 @@ exports.getThemeById = async (req, res) => {
 
 exports.createTheme = async (req, res) => {
   try {
-    const theme = new Theme(req.body);
+    const teacherId = req.teacher?.id;
+    const adminId = req.admin?.id;
+    if (!teacherId && !adminId) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+    const theme = new Theme({
+      ...req.body,
+      teacher: teacherId,
+      admin: adminId,
+    });
     await theme.save();
     return res.status(201).json({ data: theme });
   } catch (error) {

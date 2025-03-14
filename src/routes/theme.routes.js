@@ -6,6 +6,7 @@ const themeRouter = Router();
 
 themeRouter.get("/", authenticate, requireRole(["admin", "teacher"]), themeController.getAllThemes);
 themeRouter.get("/student", authenticate, requireRole(["student"]), themeController.getAllThemesForStudents);
+themeRouter.get("/teacher/themes", authenticate, requireRole(["admin", "teacher"]), themeController.getThemeByTeacher);
 themeRouter.post("/", authenticate, requireRole(["admin", "teacher"]), themeController.createTheme);
 
 themeRouter.get("/:id", authenticate, requireRole(["admin", "teacher"]), themeController.getThemeById);
