@@ -108,6 +108,7 @@ exports.checkAnswers = async (req, res) => {
         let correctAnswer = null;
         let selectedAnswer = null;
         let description = null;
+        let questionType = question.type; // Capture question type for later use
 
         if (question.type === 1) {
           // Multiple-choice
@@ -124,6 +125,7 @@ exports.checkAnswers = async (req, res) => {
                 : null,
               description: null,
               isCorrect: false,
+              questionType,
               error: "Invalid answer ID",
             };
           }
@@ -132,7 +134,7 @@ exports.checkAnswers = async (req, res) => {
             selectedAnswer &&
             correctAnswer._id.toString() === selectedAnswer._id.toString();
         } else if (question.type === 2) {
-          // Open-ended (basic example: match against a stored answer)
+          // Open-ended
           description = answer.answer?.trim() || "";
           correctAnswer = question.answers[0]; // Assuming first answer is correct for type 2
           isCorrect =
@@ -153,13 +155,14 @@ exports.checkAnswers = async (req, res) => {
               : null,
           description,
           isCorrect,
+          questionType, // Store type for detailedResults
         };
       })
       .filter((ans) => ans !== null);
 
     // Calculate score and update student
     const percentage =
-      Math.round((correctAnswers / totalTestQuestions) * 100 * 10) / 10; // Round to 1 decimal
+      Math.round((correctAnswers / totalTestQuestions) * 100 * 10) / 10;
     let earnedPoints = 0;
     if (percentage >= 75) {
       findStudent.balance += findTest.point;
@@ -174,7 +177,7 @@ exports.checkAnswers = async (req, res) => {
       answers: studentAnswers,
     });
 
-    // Response
+    // Response with detailed results
     return res.json({
       message:
         percentage >= 75
@@ -190,7 +193,7 @@ exports.checkAnswers = async (req, res) => {
           ans.selectedAnswer?.answer || ans.description || "Javob kiritilmagan",
         correctAnswer:
           ans.correctAnswer?.answer ||
-          (question.type === 2 ? ans.correctAnswer?.answer : "N/A"),
+          (ans.questionType === 2 ? ans.correctAnswer?.answer : "N/A"),
         isCorrect: ans.isCorrect,
       })),
     });
