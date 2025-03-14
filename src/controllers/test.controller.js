@@ -16,7 +16,7 @@ exports.getByTeacher = async (req, res) => {
   try {
     const tests = await Test.find({ teacher: req.teacher.id }).sort({
       createdAt: -1,
-    });
+    }).populate("group").lean();
     return res.json({ data: tests });
   } catch (error) {
     return res.status(500).json({ message: error.message });
