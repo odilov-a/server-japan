@@ -34,7 +34,7 @@ exports.getThemeByTeacher = async (req, res) => {
     if (!teacherId) {
       return res.status(403).json({ message: "Unauthorized" });
     }
-    const themes = await Theme.find({ teacher: teacherId });
+    const themes = await Theme.find({ teacher: teacherId }).populate("group");
     return res.status(200).json({ data: themes });
   } catch (error) {
     return res.status(500).json({ message: error.message });
