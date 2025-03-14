@@ -6,7 +6,7 @@ exports.getAllStudents = async (req, res) => {
   try {
     const students = await Student.find()
       .select(
-        "firstName lastName phoneNumber photoUrl username lastLogin group"
+        "firstName lastName phoneNumber photoUrl username lastLogin group isActive"
       )
       .populate("group");
     return res.json({ data: students });
