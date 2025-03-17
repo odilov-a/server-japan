@@ -1,21 +1,34 @@
 const Passed = require("../models/Passed.js");
 
-exports.getAll = async (req, res) => {
+exports.getAllPassed = async (req, res) => {
   try {
-    const data = await Passed.find();
-    return res.json({ data: data });
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-};
+    const data = await Passed.find()
+      .populate("student")
+      .populate("test")
+    const formattedData = data.map((item) => {
+      const totalQuestions = item.answers.length;
+      const correctAnswers = item.answers.filter(
+        (answer) => answer.selectedAnswer === answer.correctAnswer
+      ).length;
+      const incorrectAnswers = totalQuestions - correctAnswers;
 
-exports.delete = async (req, res) => {
-  try {
-    const data = await Passed.findByIdAndDelete(req.params.id);
-    if (!data) {
-      return res.status(404).json({ message: "Result not found" });
-    }
-    return res.json({ message: "Result deleted successfully" });
+      return {
+        id: item._id,
+        student: {
+          name: `${item.student.firstName} ${item.student.lastName}`,
+        },
+        test: {
+          name: item.test.name,
+        },
+        stats: {
+          totalQuestions,
+          correctAnswers,
+          incorrectAnswers,
+        },
+        createdAt: item.createdAt,
+      };
+    });
+    return res.json({ data: formattedData });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

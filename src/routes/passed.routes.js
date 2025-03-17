@@ -5,7 +5,6 @@ const passedController = require("../controllers/passed.controller");
 
 const passedRoutes = Router()
 
-passedRoutes.get("/", authenticate, requireRole(["admin", "teacher", "student"]), passedController.getAll);
-passedRoutes.delete("/:id", authenticate, requireRole(["admin", "teacher"]), passedController.delete);
+passedRoutes.get("/", authenticate, requireRole(["admin", "teacher"]), passedController.getAllPassed);
 
 module.exports = passedRoutes;
