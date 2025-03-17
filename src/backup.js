@@ -11,7 +11,7 @@ const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 const MONGO_URI = process.env.MONGO_URL;
 const BACKUP_PATH = "./backup";
 const databaseName = process.env.DATABASE_NAME;
-const STATIC_FOLDERS = ["./uploads", "./tests", "./src/log"];
+const STATIC_FOLDERS = ["./uploads", "./src/log"];
 
 function backupDatabase() {
   const command = `mongodump --uri="${MONGO_URI}" --out="${BACKUP_PATH}"`;

@@ -71,7 +71,6 @@ exports.createTest = async (req, res) => {
 
 exports.checkAnswers = async (req, res) => {
   try {
-    // Fetch test and student
     const findTest = await Test.findById(req.params.id);
     if (!findTest) return res.status(404).json({ message: "Test not found" });
 
@@ -85,7 +84,6 @@ exports.checkAnswers = async (req, res) => {
         .status(400)
         .json({ message: "No questions found for this test" });
 
-    // Validate all questions answered
     const studentAnswersInput = req.body.answers || [];
     if (studentAnswersInput.length !== questions.length) {
       return res.status(400).json({
@@ -96,71 +94,61 @@ exports.checkAnswers = async (req, res) => {
     let correctAnswers = 0;
     const totalTestQuestions = questions.length;
 
-    // Process answers
     const studentAnswers = studentAnswersInput
       .map((answer) => {
         const question = questions.find(
           (q) => q._id.toString() === answer.question
         );
-        if (!question) return null;
+        if (!question) {
+          return null;
+        }
 
         let isCorrect = false;
         let correctAnswer = null;
         let selectedAnswer = null;
-        let description = null;
-        let questionType = question.type; // Capture question type for later use
+        const questionType = question.type !== undefined ? question.type : 1;
 
-        if (question.type === 1) {
-          // Multiple-choice
+        if (questionType === 1) {
           correctAnswer = question.answers.find((i) => i.isCorrect);
           selectedAnswer = question.answers.find(
             (i) => i._id.toString() === answer.answer
           );
+
           if (!selectedAnswer) {
             return {
               question: question._id,
-              selectedAnswer: null,
-              correctAnswer: correctAnswer
-                ? { answer: correctAnswer.answer, _id: correctAnswer._id }
-                : null,
-              description: null,
+              selectedAnswer: "Javob kiritilmagan",
+              correctAnswer: correctAnswer ? correctAnswer.answer : "N/A",
               isCorrect: false,
-              questionType,
-              error: "Invalid answer ID",
             };
           }
           isCorrect =
             correctAnswer &&
             selectedAnswer &&
             correctAnswer._id.toString() === selectedAnswer._id.toString();
-        } else if (question.type === 2) {
-          // Open-ended
-          description = answer.answer?.trim() || "";
-          correctAnswer = question.answers[0]; // Assuming first answer is correct for type 2
+        } else if (questionType === 2) {
+          const description = answer.answer?.trim() || "";
+          correctAnswer = question.answers[0];
           isCorrect =
             correctAnswer &&
             description.toLowerCase() === correctAnswer.answer.toLowerCase();
+          selectedAnswer = description;
+        } else {
+          console.log(`Unknown question type: ${questionType}`);
         }
 
         if (isCorrect) correctAnswers++;
         return {
           question: question._id,
-          selectedAnswer:
-            question.type === 1 && selectedAnswer
-              ? { answer: selectedAnswer.answer, _id: selectedAnswer._id }
-              : null,
-          correctAnswer:
-            question.type === 1 && correctAnswer
-              ? { answer: correctAnswer.answer, _id: correctAnswer._id }
-              : null,
-          description,
+          selectedAnswer: selectedAnswer
+            ? selectedAnswer.answer
+            : "Javob kiritilmagan",
+          correctAnswer: correctAnswer ? correctAnswer.answer : "N/A",
           isCorrect,
-          questionType, // Store type for detailedResults
         };
       })
       .filter((ans) => ans !== null);
 
-    // Calculate score and update student
     const percentage =
       Math.round((correctAnswers / totalTestQuestions) * 100 * 10) / 10;
     let earnedPoints = 0;
@@ -170,14 +158,12 @@ exports.checkAnswers = async (req, res) => {
       earnedPoints = findTest.point;
     }
 
-    // Save result
     const passedTest = await Passed.create({
       student: req.userId,
       test: req.params.id,
       answers: studentAnswers,
     });
 
-    // Response with detailed results
     return res.json({
       message:
         percentage >= 75
@@ -189,11 +175,8 @@ exports.checkAnswers = async (req, res) => {
       earnedPoints,
       detailedResults: studentAnswers.map((ans) => ({
         questionId: ans.question,
-        selectedAnswer:
-          ans.selectedAnswer?.answer || ans.description || "Javob kiritilmagan",
-        correctAnswer:
-          ans.correctAnswer?.answer ||
-          (ans.questionType === 2 ? ans.correctAnswer?.answer : "N/A"),
+        selectedAnswer: ans.selectedAnswer,
+        correctAnswer: ans.correctAnswer,
         isCorrect: ans.isCorrect,
       })),
     });
@@ -201,74 +184,6 @@ exports.checkAnswers = async (req, res) => {
     return res.status(500).json({ message: "Server xatosi: " + error.message });
   }
 };
-
-// exports.checkAnswers = async (req, res) => {
-//   try {
-//     const findTest = await Test.findById(req.params.id);
-//     if (!findTest) return res.status(404).json({ message: "Test not found" });
-//     const findStudent = await Student.findById(req.userId);
-//     if (!findStudent)
-//       return res.status(404).json({ message: "Student not found" });
-//     const questions = await Question.find({ test: req.params.id });
-//     let correctAnswers = 0;
-//     let totalTestQuestions = questions.length;
-//     const studentAnswers = req.body.answers
-//       .map((answer) => {
-//         const question = questions.find(
-//           (q) => q._id.toString() === answer.question
-//         );
-//         if (!question) return null;
-//         let isCorrect = false;
-//         let correctAnswer = null;
-//         let selectedAnswer = null;
-//         let description = null;
-//         if (question.type === 1) {
-//           correctAnswer = question.answers.find((i) => i.isCorrect);
-//           selectedAnswer = question.answers.find(
-//             (i) => i._id.toString() === answer.answer
-//           );
-//           isCorrect =
-//             correctAnswer &&
-//             selectedAnswer &&
-//             correctAnswer._id.toString() === selectedAnswer._id.toString();
-//         } else if (question.type === 2) {
-//           description = answer.answer?.trim() || "";
-//         }
-//         if (isCorrect) correctAnswers++;
-//         return {
-//           question: question._id,
-//           selectedAnswer: question.type === 1 ? selectedAnswer : null,
-//           correctAnswer: question.type === 1 ? correctAnswer : null,
-//           description,
-//         };
-//       })
-//       .filter((ans) => ans !== null);
-//     const percentage = (correctAnswers / totalTestQuestions) * 100;
-//     let earnedPoints = 0;
-//     if (percentage >= 75) {
-//       findStudent.balance += findTest.point;
-//       await findStudent.save();
-//       earnedPoints = findTest.point;
-//     }
-//     const passedTest = await Passed.create({
-//       student: req.userId,
-//       test: req.params.id,
-//       answers: studentAnswers,
-//     });
-//     return res.json({
-//       message:
-//         percentage >= 75
-//           ? "Congratulations! You passed the test"
-//           : "Sorry! You failed the test",
-//       percentage,
-//       correctAnswers,
-//       totalQuestions: totalTestQuestions,
-//       earnedPoints,
-//     });
-//   } catch (error) {
-//     return res.status(500).json({ message: error.message });
-//   }
-// };
 
 exports.updateTest = async (req, res) => {
   try {
