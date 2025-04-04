@@ -167,8 +167,8 @@ exports.checkAnswers = async (req, res) => {
     return res.json({
       message:
         percentage >= 75
-          ? "Tabriklaymiz! Siz testdan o'tdingiz"
-          : "Afsus! Siz testdan o'ta olmadingiz",
+          ? "Congratulations! You passed the test."
+          : "Sorry! You failed the test.",
       percentage,
       correctAnswers,
       totalQuestions: totalTestQuestions,
