@@ -5,6 +5,10 @@ const studentSchema = new Schema(
       type: Types.ObjectId,
       ref: "Group",
     },
+    telegramId: {
+      type: String,
+      required: true,
+    },
     firstName: {
       type: String,
       required: true,

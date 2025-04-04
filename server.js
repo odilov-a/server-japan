@@ -4,6 +4,7 @@ const cors = require("cors");
 const mongoSanitize = require("express-mongo-sanitize");
 dotenv.config();
 require("./src/backup.js");
+require("./src/utils/homework.js");
 require("./src/connection.js");
 
 const router = require("./src/routes/router.js");
