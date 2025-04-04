@@ -1,5 +1,14 @@
 const Homework = require("../models/Homework.js");
 
+exports.getAllHomeworks = async (req, res) => {
+  try {
+    const homeworks = await Homework.find();
+    return res.json({ data: homeworks });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 exports.createHomework = async (req, res) => {
   try {
     const homework = new Homework(req.body);
