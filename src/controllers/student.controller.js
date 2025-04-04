@@ -4,9 +4,19 @@ const Student = require("../models/Student.js");
 
 exports.getAllStudents = async (req, res) => {
   try {
-    const students = await Student.find()
+    const adminId = req.admin?.id;
+    const teacherId = req.teacher?.id;
+    let query = {};
+    if (adminId) {
+      query = {};
+    } else if (teacherId) {
+      query = { teacher: teacherId };
+    } else {
+      return res.status(403).json({ message: "Unauthorized access" });
+    }
+    const students = await Student.find(query)
       .select(
-        "firstName lastName phoneNumber photoUrl username lastLogin group isActive"
+        "firstName lastName phoneNumber photoUrl username lastLogin group isActive admin teacher"
       )
       .populate("group");
     return res.json({ data: students });
@@ -56,12 +66,27 @@ exports.getStudentById = async (req, res) => {
 
 exports.searchStudentByFirstNameLastName = async (req, res) => {
   try {
-    const students = await Student.find({
+    const adminId = req.admin?.id;
+    const teacherId = req.teacher?.id;
+    const searchQuery = req.query.search || "";
+    let baseQuery = {};
+    if (adminId) {
+      baseQuery = {};
+    } else if (teacherId) {
+      baseQuery = { teacher: teacherId };
+    } else {
+      return res.status(403).json({ message: "Unauthorized access" });
+    }
+    const query = {
+      ...baseQuery,
       $or: [
-        { firstName: { $regex: req.query.search, $options: "i" } },
-        { lastName: { $regex: req.query.search, $options: "i" } },
+        { firstName: { $regex: searchQuery, $options: "i" } },
+        { lastName: { $regex: searchQuery, $options: "i" } },
       ],
-    }).select("firstName lastName username isActive lastLogin photoUrl");
+    };
+    const students = await Student.find(query).select(
+      "firstName lastName username isActive lastLogin photoUrl"
+    ).populate("group");
     return res.json({ data: students });
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -70,45 +95,34 @@ exports.searchStudentByFirstNameLastName = async (req, res) => {
 
 exports.registerStudent = async (req, res) => {
   try {
+    const admin = req.admin?.id;
+    const teacher = req.teacher?.id;
     const { password, ...otherData } = req.body;
+    const existingStudent = await Student.findOne({
+      username: otherData.username,
+    });
+    if (existingStudent) {
+      return res.status(400).json({ message: "Username already exists" });
+    }
+    if (password.length < 8) {
+      return res.status(400).json({
+        message: "Password must be at least 8 characters long",
+      });
+    }
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        message:
+          "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+      });
+    }
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     const student = new Student({
       ...otherData,
       password: hashedPassword,
-    });
-    await student.save();
-    const token = sign({
-      id: student._id,
-      role: student.role,
-      username: student.username,
-      createdAt: student.createdAt,
-    });
-    return res.status(201).json({
-      data: {
-        token,
-        student,
-      },
-    });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-};
-
-exports.adminRegisterStudent = async (req, res) => {
-  try {
-    const { firstName, lastName, username, password } = req.body;
-    const existingStudent = await Student.findOne({ username });
-    if (existingStudent) {
-      return res.status(400).json({ message: "Username already exists" });
-    }
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-    const student = new Student({
-      firstName,
-      lastName,
-      username,
-      password: hashedPassword,
+      admin: admin,
+      teacher: teacher,
     });
     await student.save();
     return res.status(201).json({ data: student });
@@ -157,6 +171,18 @@ exports.meUpdateStudent = async (req, res) => {
   try {
     const { userId } = req;
     const { password, ...otherData } = req.body;
+    if (password.length < 8) {
+      return res.status(400).json({
+        message: "Password must be at least 8 characters long",
+      });
+    }
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        message:
+          "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+      });
+    }
     let updateData = { ...otherData };
     if (password) {
       const salt = await bcrypt.genSalt(10);
@@ -178,6 +204,18 @@ exports.meUpdateStudent = async (req, res) => {
 exports.updateStudent = async (req, res) => {
   try {
     const { password, ...otherData } = req.body;
+    if (password.length < 8) {
+      return res.status(400).json({
+        message: "Password must be at least 8 characters long",
+      });
+    }
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        message:
+          "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+      });
+    }
     let updateData = { ...otherData };
     if (password) {
       const salt = await bcrypt.genSalt(10);

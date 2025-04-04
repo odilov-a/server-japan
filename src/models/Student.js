@@ -42,6 +42,14 @@ const studentSchema = new Schema(
       type: Date,
       default: Date.now,
     },
+    admin: {
+      type: Types.ObjectId,
+      ref: "Admin",
+    },
+    teacher: {
+      type: Types.ObjectId,
+      ref: "Teacher",
+    },
   },
   {
     versionKey: false,

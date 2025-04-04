@@ -28,7 +28,7 @@ exports.getAllPassed = async (req, res) => {
         createdAt: item.createdAt,
       };
     });
-    return res.json({ data: formattedData });
+    return res.json({ data: formattedData});
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

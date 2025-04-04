@@ -7,7 +7,7 @@ if (!SECRET) {
 }
 
 exports.sign = (payload, options = {}) => {
-  return jwt.sign(payload, SECRET, { expiresIn: "3d", ...options });
+  return jwt.sign(payload, SECRET, { expiresIn: "1d", ...options });
 };
 
 exports.verify = (token) => {
