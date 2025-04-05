@@ -7,10 +7,10 @@ const homeworkSchema = new Schema(
     description: {
       type: String,
     },
-    student: [
+    group: [
       {
         type: Types.ObjectId,
-        ref: "Student",
+        ref: "Group",
         required: true,
       },
     ],

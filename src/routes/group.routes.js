@@ -5,7 +5,7 @@ const { requireRole } = require("../middlewares/role.middleware.js");
 const groupRouter = Router();
 
 groupRouter.get("/", authenticate, requireRole(["admin", "teacher", "student"]), groupController.getAllGroups);
-groupRouter.post("/", authenticate, requireRole(["admin"]), groupController.createGroup);
+groupRouter.post("/", authenticate, requireRole(["admin", "teacher"]), groupController.createGroup);
 
 groupRouter.get("/:id", authenticate, requireRole(["admin"]), groupController.getGroupById);
 groupRouter.put("/:id", authenticate, requireRole(["admin"]), groupController.updateGroup);

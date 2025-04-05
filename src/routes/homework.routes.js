@@ -7,5 +7,6 @@ const homeworkRouter = Router();
 homeworkRouter.get("/", authenticate, requireRole(["teacher"]), homeworkController.getAllHomeworks);
 homeworkRouter.post("/", authenticate, requireRole(["teacher"]), homeworkController.createHomework);
 homeworkRouter.put("/:id", authenticate, requireRole(["teacher"]), homeworkController.updateHomework);
+homeworkRouter.delete("/:id", authenticate, requireRole(["teacher"]), homeworkController.deleteHomework);
 
 module.exports = homeworkRouter;

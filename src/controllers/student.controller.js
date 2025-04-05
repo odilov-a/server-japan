@@ -16,7 +16,7 @@ exports.getAllStudents = async (req, res) => {
     }
     const students = await Student.find(query)
       .select(
-        "firstName lastName phoneNumber photoUrl username lastLogin group isActive admin teacher"
+        "firstName lastName phoneNumber photoUrl username lastLogin group isActive admin teacher telegramId"
       )
       .populate("group");
     return res.json({ data: students });
@@ -171,18 +171,6 @@ exports.meUpdateStudent = async (req, res) => {
   try {
     const { userId } = req;
     const { password, ...otherData } = req.body;
-    if (password.length < 8) {
-      return res.status(400).json({
-        message: "Password must be at least 8 characters long",
-      });
-    }
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
-    if (!passwordRegex.test(password)) {
-      return res.status(400).json({
-        message:
-          "Password must contain at least one uppercase letter, one lowercase letter, and one number",
-      });
-    }
     let updateData = { ...otherData };
     if (password) {
       const salt = await bcrypt.genSalt(10);
@@ -204,18 +192,6 @@ exports.meUpdateStudent = async (req, res) => {
 exports.updateStudent = async (req, res) => {
   try {
     const { password, ...otherData } = req.body;
-    if (password.length < 8) {
-      return res.status(400).json({
-        message: "Password must be at least 8 characters long",
-      });
-    }
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
-    if (!passwordRegex.test(password)) {
-      return res.status(400).json({
-        message:
-          "Password must contain at least one uppercase letter, one lowercase letter, and one number",
-      });
-    }
     let updateData = { ...otherData };
     if (password) {
       const salt = await bcrypt.genSalt(10);
