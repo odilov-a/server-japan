@@ -84,9 +84,9 @@ exports.searchStudentByFirstNameLastName = async (req, res) => {
         { lastName: { $regex: searchQuery, $options: "i" } },
       ],
     };
-    const students = await Student.find(query).select(
-      "firstName lastName username isActive lastLogin photoUrl"
-    ).populate("group");
+    const students = await Student.find(query)
+      .select("firstName lastName username isActive lastLogin photoUrl")
+      .populate("group");
     return res.json({ data: students });
   } catch (error) {
     return res.status(500).json({ error: error.message });

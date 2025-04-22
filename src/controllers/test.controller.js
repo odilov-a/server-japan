@@ -1,6 +1,6 @@
 const Test = require("../models/Test.js");
-const Student = require("../models/Student.js");
 const Passed = require("../models/Passed.js");
+const Student = require("../models/Student.js");
 const Question = require("../models/Question.js");
 
 exports.getAllTest = async (req, res) => {

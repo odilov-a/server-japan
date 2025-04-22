@@ -5,6 +5,7 @@ const passedController = require("../controllers/passed.controller");
 
 const passedRoutes = Router()
 
+passedRoutes.get("/student", authenticate, requireRole(["student"]), passedController.getMyPassed);
 passedRoutes.get("/", authenticate, requireRole(["admin", "teacher"]), passedController.getAllPassed);
 
 module.exports = passedRoutes;
