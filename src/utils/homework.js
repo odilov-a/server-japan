@@ -8,7 +8,7 @@ const Student = require("../models/Student.js");
 const BOT_TOKEN = process.env.HOMEWORK_BOT;
 const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
 
-cron.schedule("0 */6 * * *", async () => {
+cron.schedule("0 */2 * * *", async () => {
   try {
     const homeworks = await Homework.find();
     for (const hw of homeworks) {
